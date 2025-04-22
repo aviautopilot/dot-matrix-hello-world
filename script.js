@@ -11,8 +11,13 @@ function typeWriter() {
   }
 }
 
-// Start typing effect
-typeWriter();
+// Display the text immediately when page loads (before typing effect)
+document.getElementById("hello-world-text").innerHTML = "";
+
+document.addEventListener("DOMContentLoaded", function() {
+  // Start typing effect once the page content is loaded
+  typeWriter();
+});
 
 // Change text size on hover
 document.body.addEventListener("mousemove", function(event) {
