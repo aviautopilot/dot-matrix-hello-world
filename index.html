@@ -3,11 +3,34 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Hello World Dot Matrix</title>
+  <title>Interactive Web Page</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="dot-matrix" id="hello-world-text"></div>
+  <!-- 3D Cube -->
+  <div class="cube" id="cube"></div>
+
+  <!-- Real-Time Clock -->
+  <div class="clock" id="clock"></div>
+
+  <!-- Particle Background -->
+  <canvas id="particles"></canvas>
+
+  <!-- Memory Game -->
+  <div class="game-container" id="memory-game">
+    <h2>Memory Game</h2>
+    <div class="game-board" id="game-board"></div>
+  </div>
+
+  <!-- Drawing Board -->
+  <canvas id="drawing-board" class="drawing-board"></canvas>
+
+  <!-- Music Visualizer -->
+  <div id="music-visualizer">
+    <h2>Music Visualizer</h2>
+    <canvas id="audio-visualizer"></canvas>
+  </div>
+
   <script src="script.js"></script>
 </body>
 </html>
