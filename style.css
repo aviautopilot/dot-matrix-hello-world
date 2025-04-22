@@ -6,6 +6,7 @@ body {
   justify-content: center;
   height: 100vh;
   overflow: hidden;
+  cursor: pointer;
 }
 
 .dot-matrix {
@@ -13,12 +14,15 @@ body {
   font-size: 60px;
   color: #00ff00;
   letter-spacing: 4px;
+  text-align: center;
   animation: pulse 2s infinite;
   text-shadow:
     0 0 2px #00ff00,
     0 0 4px #00ff00,
     0 0 6px #00ff00,
     0 0 8px #00ff00;
+  white-space: nowrap;
+  width: max-content;
 }
 
 @keyframes pulse {
@@ -31,3 +35,14 @@ body {
     opacity: 0.8;
   }
 }
+
+#hello-world-text {
+  overflow: hidden;
+  width: 0;
+}
+
+body:hover .dot-matrix {
+  color: #ff0000;
+  animation: pulse 1s infinite;
+}
+
