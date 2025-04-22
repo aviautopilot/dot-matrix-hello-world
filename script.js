@@ -1,19 +1,31 @@
-// 1. 3D Cube Rotation
-document.addEventListener('mousemove', (e) => {
-  let x = e.clientX / window.innerWidth * 360;
-  let y = e.clientY / window.innerHeight * 360;
-  document.getElementById("cube").style.transform = `rotateX(${y}deg) rotateY(${x}deg)`;
-});
+// 1. Weather Data Fetching (Using OpenWeather API)
+async function fetchWeather() {
+  const apiKey = 'YOUR_OPENWEATHER_API_KEY';  // Replace with your API key
+  const city = 'London';  // Example: You can change city or get user location dynamically
+  const response = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric`);
+  const data = await response.json();
 
-// 2. Real-Time Clock
-function updateClock() {
-  const clock = document.getElementById("clock");
-  const date = new Date();
-  clock.innerHTML = date.toLocaleTimeString();
+  const weatherInfo = `
+    <p>${data.name}, ${data.sys.country}</p>
+    <p>${data.weather[0].description}</p>
+    <p>${data.main.temp}°C</p>
+  `;
+  document.getElementById('weather-info').innerHTML = weatherInfo;
 }
+
+// 2. Live Clock with Animation
+function updateClock() {
+  const timeElement = document.getElementById('time');
+  const date = new Date();
+  const timeString = date.toLocaleTimeString();
+  timeElement.textContent = timeString;
+  timeElement.classList.add('animated-time');
+  setTimeout(() => timeElement.classList.remove('animated-time'), 1000);
+}
+
 setInterval(updateClock, 1000);
 
-// 3. Particle Effect Background
+// 3. Particle Effects Background
 const canvas = document.getElementById("particles");
 const ctx = canvas.getContext("2d");
 canvas.width = window.innerWidth;
@@ -66,70 +78,31 @@ function animateParticles() {
 }
 animateParticles();
 
-// 4. Memory Game (Simplified Version)
-const cards = ["A", "B", "C", "D", "A", "B", "C", "D"];
-let cardHTML = "";
-cards.sort(() => Math.random() - 0.5);
-cards.forEach((card, index) => {
-  cardHTML += `<div class="card" data-index="${index}">${card}</div>`;
-});
-document.getElementById("game-board").innerHTML = cardHTML;
-document.querySelectorAll(".card").forEach(card => {
-  card.addEventListener("click", () => {
-    card.classList.toggle("flipped");
-  });
-});
+// 4. News Ticker (Random headlines)
+const newsHeadlines = [
+  "Breaking: New technology is changing the world!",
+  "Global economy shows signs of recovery.",
+  "Scientists discover new species in the rainforest.",
+  "The future of space exploration looks bright.",
+  "Health experts urge people to get vaccinated."
+];
 
-// 5. Drawing Board
-const drawingCanvas = document.getElementById("drawing-board");
-const ctxDrawing = drawingCanvas.getContext("2d");
-let drawing = false;
-drawingCanvas.addEventListener("mousedown", () => {
-  drawing = true;
-});
-drawingCanvas.addEventListener("mouseup", () => {
-  drawing = false;
-});
-drawingCanvas.addEventListener("mousemove", (e) => {
-  if (drawing) {
-    ctxDrawing.lineTo(e.clientX - drawingCanvas.offsetLeft, e.clientY - drawingCanvas.offsetTop);
-    ctxDrawing.stroke();
-  }
-});
-ctxDrawing.lineWidth = 2;
-ctxDrawing.lineCap = "round";
-ctxDrawing.strokeStyle = "#ffffff";
+let tickerIndex = 0;
 
-// 6. Music Visualizer (With Web Audio API)
-const audio = new Audio('your-music-file.mp3'); // Add a valid mp3 link or use a file that exists.
-audio.loop = true;
-audio.play();
-
-const visualizerCanvas = document.getElementById("audio-visualizer");
-const ctxVisualizer = visualizerCanvas.getContext("2d");
-const analyser = new (window.AudioContext || window.webkitAudioContext)().createAnalyser();
-const source = analyser.context.createMediaElementSource(audio);
-source.connect(analyser);
-analyser.connect(analyser.context.destination);
-
-visualizerCanvas.width = 500;
-visualizerCanvas.height = 200;
-
-function drawVisualizer() {
-  const bufferLength = analyser.frequencyBinCount;
-  const dataArray = new Uint8Array(bufferLength);
-  analyser.getByteFrequencyData(dataArray);
-  
-  ctxVisualizer.fillStyle = "#000000";
-  ctxVisualizer.fillRect(0, 0, visualizerCanvas.width, visualizerCanvas.height);
-  const barWidth = visualizerCanvas.width / bufferLength;
-  
-  dataArray.forEach((value, index) => {
-    const barHeight = value;
-    ctxVisualizer.fillStyle = "#00ff00";
-    ctxVisualizer.fillRect(index * barWidth, visualizerCanvas.height - barHeight, barWidth, barHeight);
-  });
-
-  requestAnimationFrame(drawVisualizer);
+function updateTicker() {
+  const tickerElement = document.getElementById('ticker');
+  tickerElement.textContent = newsHeadlines[tickerIndex];
+  tickerIndex = (tickerIndex + 1) % newsHeadlines.length;
 }
-drawVisualizer();
+
+setInterval(updateTicker, 5000);
+
+// 5. Interactive Button Effect
+const button = document.getElementById('interactive-btn');
+button.addEventListener('click', () => {
+  alert('You clicked the button!');
+});
+
+// Initial function calls
+fetchWeather();
+updateClock();
