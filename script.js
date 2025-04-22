@@ -15,21 +15,32 @@ const starSpeeds = [0.001, 0.002, 0.004];
 const starSizes = [1.5, 1.2, 1.0];
 
 const vertexShader = `
-  varying float brightness;
+  uniform float time;
+  attribute float size;
+  varying float vOpacity;
+
   void main() {
-    brightness = 0.6 + 0.4 * sin(position.x + position.y + position.z + time);
+    vOpacity = 0.6 + 0.4 * sin(time + position.x * 0.3 + position.y * 0.3 + position.z * 0.3);
     vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
     gl_PointSize = size * (300.0 / -mvPosition.z);
     gl_Position = projectionMatrix * mvPosition;
   }
 `;
 
+const elapsed = performance.now() * 0.001; // time in seconds
+
+starLayers.forEach(layer => {
+  layer.mesh.material.uniforms.time.value = elapsed;
+});
+
+
 const fragmentShader = `
-  varying float brightness;
+  varying float vOpacity;
+
   void main() {
-    float dist = length(gl_PointCoord - vec2(0.5));
-    float alpha = 1.0 - smoothstep(0.4, 0.5, dist);
-    gl_FragColor = vec4(vec3(brightness), alpha);
+    float dist = distance(gl_PointCoord, vec2(0.5));
+    float alpha = 1.0 - smoothstep(0.3, 0.5, dist);
+    gl_FragColor = vec4(vec3(1.0), alpha * vOpacity);
   }
 `;
 
@@ -45,14 +56,17 @@ function createStarLayer(count, speed, size) {
   }
   geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
 
-  const material = new THREE.PointsMaterial({
-    color: 0xffffff,
-    size: size,
-    transparent: true,
-    blending: THREE.AdditiveBlending,
-    depthWrite: false,
-  });
-
+const material = new THREE.ShaderMaterial({
+  uniforms: {
+    time: { value: 0.0 }
+  },
+  vertexShader,
+  fragmentShader,
+  transparent: true,
+  depthWrite: false,
+  blending: THREE.AdditiveBlending
+});
+  
   const stars = new THREE.Points(geometry, material);
   scene.add(stars);
   starLayers.push({ mesh: stars, speed });
