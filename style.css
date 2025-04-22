@@ -3,12 +3,39 @@
   padding: 0;
   box-sizing: border-box;
 }
+
 html, body {
-  width: 100%;
   height: 100%;
+  overflow-x: hidden;
   background: black;
+  font-family: sans-serif;
+}
+
+#hero {
+  width: 100%;
+  height: 100vh;
+  position: relative;
   overflow: hidden;
 }
-canvas {
+
+canvas#starfield {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   display: block;
+  z-index: 0;
+}
+
+#flare-target {
+  position: absolute;
+  top: 40%;
+  left: 50%;
+  width: 100px;
+  height: 100px;
+  margin-left: -50px;
+  margin-top: -50px;
+  z-index: 2;
+  cursor: pointer;
 }
