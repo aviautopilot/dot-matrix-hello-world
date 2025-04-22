@@ -1,96 +1,113 @@
-const canvas = document.getElementById("space");
-const ctx = canvas.getContext("2d");
+const canvas = document.getElementById('starfield');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+renderer.setPixelRatio(window.devicePixelRatio);
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setClearColor(0x000000);
 
-let w, h;
-function resize() {
-  w = canvas.width = window.innerWidth;
-  h = canvas.height = window.innerHeight;
-}
-resize();
-window.addEventListener("resize", resize);
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+camera.position.z = 5;
 
-// Generate Stars
-const STAR_COUNT = 500;
-const stars = Array.from({ length: STAR_COUNT }, () => ({
-  x: Math.random() * w,
-  y: Math.random() * h,
-  z: Math.random() * w,
-  size: Math.random() * 1.5 + 0.5,
-  opacity: Math.random(),
-  speed: Math.random() * 0.5 + 0.2,
-  twinkle: Math.random() < 0.5
-}));
+const starLayers = [];
+const numLayers = 3;
+const starCounts = [500, 1000, 1500];
+const starSpeeds = [0.001, 0.002, 0.004];
+const starSizes = [1.5, 1.2, 1.0];
 
-// Shooting stars
-let shootingStars = [];
-
-function spawnShootingStar() {
-  if (Math.random() < 0.01) {
-    shootingStars.push({
-      x: Math.random() * w,
-      y: Math.random() * h / 2,
-      length: Math.random() * 80 + 100,
-      speed: Math.random() * 10 + 6,
-      opacity: 1
-    });
+const vertexShader = `
+  varying float brightness;
+  void main() {
+    brightness = 0.6 + 0.4 * sin(position.x + position.y + position.z + time);
+    vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+    gl_PointSize = size * (300.0 / -mvPosition.z);
+    gl_Position = projectionMatrix * mvPosition;
   }
+`;
+
+const fragmentShader = `
+  varying float brightness;
+  void main() {
+    float dist = length(gl_PointCoord - vec2(0.5));
+    float alpha = 1.0 - smoothstep(0.4, 0.5, dist);
+    gl_FragColor = vec4(vec3(brightness), alpha);
+  }
+`;
+
+function createStarLayer(count, speed, size) {
+  const geometry = new THREE.BufferGeometry();
+  const positions = [];
+  for (let i = 0; i < count; i++) {
+    positions.push(
+      (Math.random() - 0.5) * 200,
+      (Math.random() - 0.5) * 200,
+      -Math.random() * 500
+    );
+  }
+  geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+
+  const material = new THREE.PointsMaterial({
+    color: 0xffffff,
+    size: size,
+    transparent: true,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+  });
+
+  const stars = new THREE.Points(geometry, material);
+  scene.add(stars);
+  starLayers.push({ mesh: stars, speed });
 }
 
-// Asteroids
-const asteroidCount = 10;
-const asteroids = Array.from({ length: asteroidCount }, () => ({
-  x: Math.random() * w,
-  y: Math.random() * h,
-  r: Math.random() * 2 + 1,
-  dx: Math.random() * 0.5 - 0.25,
-  dy: Math.random() * 0.5 - 0.25
-}));
-
-function draw() {
-  ctx.fillStyle = "rgba(0, 0, 10, 0.3)";
-  ctx.fillRect(0, 0, w, h);
-
-  // Stars
-  stars.forEach(star => {
-    star.opacity += (Math.random() - 0.5) * 0.05;
-    star.opacity = Math.max(0.1, Math.min(1, star.opacity));
-    ctx.beginPath();
-    ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
-    ctx.fillStyle = `rgba(255, 255, ${200 + Math.random() * 55}, ${star.opacity})`;
-    ctx.fill();
-  });
-
-  // Shooting stars
-  spawnShootingStar();
-  shootingStars.forEach((s, i) => {
-    ctx.strokeStyle = `rgba(255,255,255,${s.opacity})`;
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(s.x, s.y);
-    ctx.lineTo(s.x + s.length, s.y + s.length / 4);
-    ctx.stroke();
-    s.x += s.speed;
-    s.y += s.speed / 4;
-    s.opacity -= 0.01;
-    if (s.opacity <= 0) shootingStars.splice(i, 1);
-  });
-
-  // Asteroids
-  asteroids.forEach(ast => {
-    ast.x += ast.dx;
-    ast.y += ast.dy;
-    if (ast.x < 0) ast.x = w;
-    if (ast.y < 0) ast.y = h;
-    if (ast.x > w) ast.x = 0;
-    if (ast.y > h) ast.y = 0;
-
-    ctx.beginPath();
-    ctx.arc(ast.x, ast.y, ast.r, 0, Math.PI * 2);
-    ctx.fillStyle = "rgba(150,150,150,0.3)";
-    ctx.fill();
-  });
-
-  requestAnimationFrame(draw);
+for (let i = 0; i < numLayers; i++) {
+  createStarLayer(starCounts[i], starSpeeds[i], starSizes[i]);
 }
 
-draw();
+let mouseX = 0, mouseY = 0;
+document.addEventListener('mousemove', e => {
+  mouseX = (e.clientX / window.innerWidth) - 0.5;
+  mouseY = (e.clientY / window.innerHeight) - 0.5;
+});
+
+let scrollY = 0;
+document.addEventListener('scroll', () => {
+  scrollY = window.scrollY;
+});
+
+function animate() {
+  requestAnimationFrame(animate);
+  starLayers.forEach((layer, index) => {
+    layer.mesh.rotation.x += layer.speed * 0.1;
+    layer.mesh.rotation.y += layer.speed * 0.1;
+
+    // Parallax with mouse
+    layer.mesh.position.x = mouseX * (index + 1) * 5;
+    layer.mesh.position.y = -mouseY * (index + 1) * 5;
+
+    // Scroll warp effect
+    layer.mesh.position.z = (scrollY * 0.05) * (index + 1);
+  });
+
+  renderer.render(scene, camera);
+}
+animate();
+
+// 🌟 Lens flare hover
+const flareTarget = document.getElementById('flare-target');
+let flareLight;
+flareTarget.addEventListener('mouseenter', () => {
+  flareLight = new THREE.PointLight(0xffeeaa, 2, 50);
+  flareLight.position.set(0, 0, 2);
+  scene.add(flareLight);
+});
+flareTarget.addEventListener('mouseleave', () => {
+  if (flareLight) {
+    scene.remove(flareLight);
+    flareLight = null;
+  }
+});
+
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
