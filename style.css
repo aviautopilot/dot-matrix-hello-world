@@ -36,13 +36,7 @@ body {
   }
 }
 
-#hello-world-text {
-  overflow: hidden;
-  width: 0;
-}
-
 body:hover .dot-matrix {
   color: #ff0000;
   animation: pulse 1s infinite;
 }
-
