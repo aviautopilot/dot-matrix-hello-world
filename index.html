@@ -3,33 +3,32 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Interactive Web Page</title>
+  <title>Interactive Dashboard</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <!-- 3D Cube -->
-  <div class="cube" id="cube"></div>
+  <div class="dashboard">
+    <div class="weather">
+      <h2 id="weather-title">Weather Info</h2>
+      <div id="weather-info"></div>
+    </div>
 
-  <!-- Real-Time Clock -->
-  <div class="clock" id="clock"></div>
+    <div class="clock">
+      <h2>Live Clock</h2>
+      <div id="time"></div>
+    </div>
 
-  <!-- Particle Effect Background -->
+    <div class="news-ticker">
+      <h2>Latest News</h2>
+      <div id="ticker"></div>
+    </div>
+
+    <div class="interactive-button">
+      <button id="interactive-btn">Click Me</button>
+    </div>
+  </div>
+
   <canvas id="particles"></canvas>
-
-  <!-- Memory Game -->
-  <div class="game-container" id="memory-game">
-    <h2>Memory Game</h2>
-    <div class="game-board" id="game-board"></div>
-  </div>
-
-  <!-- Drawing Board -->
-  <canvas id="drawing-board" class="drawing-board"></canvas>
-
-  <!-- Music Visualizer -->
-  <div id="music-visualizer">
-    <h2>Music Visualizer</h2>
-    <canvas id="audio-visualizer"></canvas>
-  </div>
 
   <script src="script.js"></script>
 </body>
