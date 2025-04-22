@@ -1,108 +1,55 @@
-// 1. Weather Data Fetching (Using OpenWeather API)
-async function fetchWeather() {
-  const apiKey = 'YOUR_OPENWEATHER_API_KEY';  // Replace with your API key
-  const city = 'London';  // Example: You can change city or get user location dynamically
-  const response = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric`);
-  const data = await response.json();
-
-  const weatherInfo = `
-    <p>${data.name}, ${data.sys.country}</p>
-    <p>${data.weather[0].description}</p>
-    <p>${data.main.temp}°C</p>
-  `;
-  document.getElementById('weather-info').innerHTML = weatherInfo;
-}
-
-// 2. Live Clock with Animation
-function updateClock() {
-  const timeElement = document.getElementById('time');
-  const date = new Date();
-  const timeString = date.toLocaleTimeString();
-  timeElement.textContent = timeString;
-  timeElement.classList.add('animated-time');
-  setTimeout(() => timeElement.classList.remove('animated-time'), 1000);
-}
-
-setInterval(updateClock, 1000);
-
-// 3. Particle Effects Background
-const canvas = document.getElementById("particles");
+const canvas = document.getElementById("starfield");
 const ctx = canvas.getContext("2d");
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
-const particles = [];
 
-function Particle(x, y) {
-  this.x = x;
-  this.y = y;
-  this.size = Math.random() * 5 + 1;
-  this.speedX = Math.random() * 3 - 1.5;
-  this.speedY = Math.random() * 3 - 1.5;
-}
+let stars = [];
+const STAR_COUNT = 300;
+let w, h;
 
-Particle.prototype.update = function() {
-  this.x += this.speedX;
-  this.y += this.speedY;
-  this.size -= 0.05;
-};
-
-Particle.prototype.draw = function() {
-  ctx.fillStyle = "#ffffff";
-  ctx.strokeStyle = "#ffffff";
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.stroke();
-};
-
-function createParticles(e) {
-  const numberOfParticles = 5;
-  for (let i = 0; i < numberOfParticles; i++) {
-    particles.push(new Particle(e.x, e.y));
+function initCanvas() {
+  w = canvas.width = window.innerWidth;
+  h = canvas.height = window.innerHeight;
+  stars = [];
+  for (let i = 0; i < STAR_COUNT; i++) {
+    stars.push({
+      x: Math.random() * w,
+      y: Math.random() * h,
+      z: Math.random() * w,
+    });
   }
 }
 
-canvas.addEventListener("mousemove", createParticles);
+function drawStars(mouseX = 0, mouseY = 0) {
+  ctx.clearRect(0, 0, w, h);
+  ctx.fillStyle = "white";
+  for (let i = 0; i < STAR_COUNT; i++) {
+    let star = stars[i];
+    star.z -= 1;
+    if (star.z <= 0) star.z = w;
 
-function animateParticles() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  particles.forEach((particle, index) => {
-    particle.update();
-    particle.draw();
-    if (particle.size <= 0.3) {
-      particles.splice(index, 1);
+    const k = 128.0 / star.z;
+    const px = (star.x - w / 2) * k + w / 2 + mouseX * 0.1;
+    const py = (star.y - h / 2) * k + h / 2 + mouseY * 0.1;
+
+    if (px >= 0 && px < w && py >= 0 && py < h) {
+      ctx.beginPath();
+      ctx.arc(px, py, 1, 0, Math.PI * 2);
+      ctx.fill();
     }
-  });
-  requestAnimationFrame(animateParticles);
-}
-animateParticles();
-
-// 4. News Ticker (Random headlines)
-const newsHeadlines = [
-  "Breaking: New technology is changing the world!",
-  "Global economy shows signs of recovery.",
-  "Scientists discover new species in the rainforest.",
-  "The future of space exploration looks bright.",
-  "Health experts urge people to get vaccinated."
-];
-
-let tickerIndex = 0;
-
-function updateTicker() {
-  const tickerElement = document.getElementById('ticker');
-  tickerElement.textContent = newsHeadlines[tickerIndex];
-  tickerIndex = (tickerIndex + 1) % newsHeadlines.length;
+  }
 }
 
-setInterval(updateTicker, 5000);
-
-// 5. Interactive Button Effect
-const button = document.getElementById('interactive-btn');
-button.addEventListener('click', () => {
-  alert('You clicked the button!');
+let mouseX = 0, mouseY = 0;
+document.addEventListener("mousemove", (e) => {
+  mouseX = (e.clientX - w / 2) / 10;
+  mouseY = (e.clientY - h / 2) / 10;
 });
 
-// Initial function calls
-fetchWeather();
-updateClock();
+function animate() {
+  drawStars(mouseX, mouseY);
+  requestAnimationFrame(animate);
+}
+
+window.addEventListener("resize", initCanvas);
+
+initCanvas();
+animate();
