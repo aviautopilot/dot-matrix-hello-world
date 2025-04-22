@@ -92,7 +92,7 @@ drawingCanvas.addEventListener("mouseup", () => {
 });
 drawingCanvas.addEventListener("mousemove", (e) => {
   if (drawing) {
-    ctxDrawing.lineTo(e.clientX, e.clientY);
+    ctxDrawing.lineTo(e.clientX - drawingCanvas.offsetLeft, e.clientY - drawingCanvas.offsetTop);
     ctxDrawing.stroke();
   }
 });
@@ -101,7 +101,7 @@ ctxDrawing.lineCap = "round";
 ctxDrawing.strokeStyle = "#ffffff";
 
 // 6. Music Visualizer (With Web Audio API)
-const audio = new Audio('your-music-file.mp3'); // Add a valid mp3 link
+const audio = new Audio('your-music-file.mp3'); // Add a valid mp3 link or use a file that exists.
 audio.loop = true;
 audio.play();
 
